@@ -35,7 +35,6 @@
 #define PARTICLES_MATERIAL_H
 
 class ParticlesMaterial : public Material {
-
 	GDCLASS(ParticlesMaterial, Material);
 
 public:
@@ -74,7 +73,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
@@ -103,7 +101,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		for (int i = 0; i < PARAM_MAX; i++) {
@@ -126,7 +123,7 @@ private:
 		return mk;
 	}
 
-	static Mutex *material_mutex;
+	static Mutex material_mutex;
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
@@ -205,18 +202,18 @@ private:
 	float parameters[PARAM_MAX];
 	float randomness[PARAM_MAX];
 
-	Ref<Texture> tex_parameters[PARAM_MAX];
+	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
-	Ref<Texture> color_ramp;
+	Ref<Texture2D> color_ramp;
 
 	bool flags[FLAG_MAX];
 
 	EmissionShape emission_shape;
 	float emission_sphere_radius;
 	Vector3 emission_box_extents;
-	Ref<Texture> emission_point_texture;
-	Ref<Texture> emission_normal_texture;
-	Ref<Texture> emission_color_texture;
+	Ref<Texture2D> emission_point_texture;
+	Ref<Texture2D> emission_normal_texture;
+	Ref<Texture2D> emission_color_texture;
 	int emission_point_count;
 
 	bool anim_loop;
@@ -234,7 +231,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_direction(Vector3 p_direction);
@@ -252,14 +249,14 @@ public:
 	void set_param_randomness(Parameter p_param, float p_value);
 	float get_param_randomness(Parameter p_param) const;
 
-	void set_param_texture(Parameter p_param, const Ref<Texture> &p_texture);
-	Ref<Texture> get_param_texture(Parameter p_param) const;
+	void set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_param_texture(Parameter p_param) const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_color_ramp(const Ref<Texture> &p_texture);
-	Ref<Texture> get_color_ramp() const;
+	void set_color_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_color_ramp() const;
 
 	void set_flag(Flags p_flag, bool p_enable);
 	bool get_flag(Flags p_flag) const;
@@ -267,17 +264,17 @@ public:
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(float p_radius);
 	void set_emission_box_extents(Vector3 p_extents);
-	void set_emission_point_texture(const Ref<Texture> &p_points);
-	void set_emission_normal_texture(const Ref<Texture> &p_normals);
-	void set_emission_color_texture(const Ref<Texture> &p_colors);
+	void set_emission_point_texture(const Ref<Texture2D> &p_points);
+	void set_emission_normal_texture(const Ref<Texture2D> &p_normals);
+	void set_emission_color_texture(const Ref<Texture2D> &p_colors);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
 	float get_emission_sphere_radius() const;
 	Vector3 get_emission_box_extents() const;
-	Ref<Texture> get_emission_point_texture() const;
-	Ref<Texture> get_emission_normal_texture() const;
-	Ref<Texture> get_emission_color_texture() const;
+	Ref<Texture2D> get_emission_point_texture() const;
+	Ref<Texture2D> get_emission_normal_texture() const;
+	Ref<Texture2D> get_emission_color_texture() const;
 	int get_emission_point_count() const;
 
 	void set_trail_divisor(int p_divisor);
@@ -301,7 +298,7 @@ public:
 
 	RID get_shader_rid() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	ParticlesMaterial();
 	~ParticlesMaterial();
