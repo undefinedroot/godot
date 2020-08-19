@@ -113,10 +113,16 @@ void ProjectSettingsEditor::_add_setting() {
 	inspector->set_current_section(setting.get_slice("/", 1));
 }
 
-void ProjectSettingsEditor::_delete_setting() {
+void ProjectSettingsEditor::_delete_setting(bool p_confirmed) {
 	String setting = _get_setting_name();
 	Variant value = ps->get(setting);
 	int order = ps->get_order(setting);
+
+	if (!p_confirmed) {
+		del_confirmation->set_text(vformat(TTR("Are you sure you want to delete '%s'?"), setting));
+		del_confirmation->popup_centered();
+		return;
+	}
 
 	undo_redo->create_action(TTR("Delete Item"));
 
@@ -171,7 +177,7 @@ void ProjectSettingsEditor::_update_advanced_bar() {
 				}
 			}
 
-			disable_add = !bad_category;
+			disable_add = bad_category;
 
 			if (!property_text.is_valid_identifier()) {
 				disable_add = true;
@@ -327,10 +333,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		header->add_child(search_bar);
 
 		search_box = memnew(LineEdit);
-		search_box->set_custom_minimum_size(Size2(300, 0));
+		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		search_bar->add_child(search_box);
-
-		search_bar->add_spacer();
 
 		advanced = memnew(CheckButton);
 		advanced->set_text(TTR("Advanced"));
@@ -345,12 +349,14 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		advanced_bar->hide();
 		header->add_child(advanced_bar);
 
+		advanced_bar->add_child(memnew(HSeparator));
+
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		advanced_bar->add_margin_child(TTR("Add or remove custom project settings."), hbc, true);
+		advanced_bar->add_margin_child(TTR("Add or Remove Custom Project Settings:"), hbc, true);
 
 		category_box = memnew(LineEdit);
-		category_box->set_custom_minimum_size(Size2(140, 0) * EDSCALE);
+		category_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		category_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_text_field_changed));
 		category_box->set_placeholder(TTR("Category"));
 		hbc->add_child(category_box);
@@ -370,7 +376,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(l);
 
 		type = memnew(OptionButton);
-		type->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
+		type->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		hbc->add_child(type);
 
 		// Start at 1 to avoid adding "Nil" as an option
@@ -383,25 +389,23 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		hbc->add_child(l);
 
 		feature_override = memnew(OptionButton);
-		feature_override->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
+		feature_override->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		feature_override->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 		hbc->add_child(feature_override);
 
-		hbc->add_spacer();
-
 		add_button = memnew(Button);
+		add_button->set_flat(true);
 		add_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_add_setting));
 		hbc->add_child(add_button);
 
 		del_button = memnew(Button);
-		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting));
+		del_button->set_flat(true);
+		del_button->connect("pressed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(false));
 		hbc->add_child(del_button);
 
 		error_label = memnew(Label);
 		advanced_bar->add_child(error_label);
 	}
-
-	header->add_child(memnew(HSeparator));
 
 	inspector = memnew(SectionedInspector);
 	inspector->get_inspector()->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
@@ -467,6 +471,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	timer->connect("timeout", callable_mp(ps, &ProjectSettings::save));
 	timer->set_one_shot(true);
 	add_child(timer);
+
+	del_confirmation = memnew(ConfirmationDialog);
+	del_confirmation->connect("confirmed", callable_mp(this, &ProjectSettingsEditor::_delete_setting), varray(true));
+	add_child(del_confirmation);
 
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
